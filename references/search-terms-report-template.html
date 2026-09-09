@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Search terms report</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root { --canvas:#f5f4ed; --ivory:#faf9f5; --sand:#e8e6dc; --ink:#141413; --body:#5e5d59; --muted:#87867f;
+    --hairline:#f0eee6; --hairline-soft:#e8e6dc; --ring:#d1cfc5;
+    --terracotta:#c96442; --coral:#d97757;
+    --good:#3d7a4a; --good-bg:rgba(61,122,74,.08); --good-ring:rgba(61,122,74,.25);
+    --warn:#d4a017; --warn-bg:rgba(212,160,23,.10); --warn-ring:rgba(212,160,23,.30);
+    --bad:#b53333; --bad-bg:rgba(181,51,51,.07); --bad-ring:rgba(181,51,51,.22);
+    --info:#3b6ea5; --info-bg:rgba(59,110,165,.08); --info-ring:rgba(59,110,165,.25);
+    --dark:#141413; --on-dark:#faf9f5; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--canvas); color:var(--ink); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .display { font-family:"Tiempos Text",Georgia,serif; font-weight:500; }
+  .mono, .kicker, .k, .tag, .num { font-family:"JetBrains Mono",ui-monospace,Menlo,monospace; }
+  .kicker { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--coral); }
+  .rail { max-width:1100px; margin:0 auto; padding:0 32px; }
+  .k { font-size:11px; color:var(--muted); }
+
+  .nav { border-bottom:1px solid var(--hairline); background:var(--canvas); position:sticky; top:0; z-index:5; }
+  .nav .rail { display:flex; align-items:center; justify-content:space-between; padding:14px 32px; gap:16px; flex-wrap:wrap; }
+  .wordmark { display:inline-flex; align-items:center; gap:8px; font-size:20px; letter-spacing:-.3px; }
+  .jump { display:flex; gap:4px; flex-wrap:wrap; }
+  .jump a { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10.5px; text-decoration:none; color:var(--body); padding:5px 9px; border-radius:7px; border:1px solid transparent; }
+  .jump a:hover { background:var(--sand); border-color:var(--ring); }
+
+  header.hero { padding:40px 0 26px; border-bottom:1px solid var(--hairline); }
+  h1 { font-size:34px; letter-spacing:-.6px; margin:8px 0 12px; }
+  .meta { font-size:12.5px; color:var(--body); line-height:1.9; }
+
+  .banner { margin:20px 0 0; padding:14px 16px; border-radius:11px; border:1px solid var(--warn-ring); background:var(--warn-bg); font-size:13.5px; line-height:1.6; }
+  .banner.bad { border-color:var(--bad-ring); background:var(--bad-bg); }
+  .banner b { color:var(--ink); }
+
+  section { padding:34px 0; border-bottom:1px solid var(--hairline); }
+  section > .rail > h2 { font-size:23px; letter-spacing:-.3px; margin:6px 0 4px; }
+  .sub { font-size:13px; color:var(--body); margin-bottom:18px; }
+
+  .finding { border:1px solid var(--hairline-soft); border-radius:12px; background:var(--ivory); padding:16px 18px; margin-bottom:14px; }
+  .finding h3 { font-size:15.5px; margin-bottom:10px; letter-spacing:-.1px; }
+  .fr { display:grid; grid-template-columns:78px 1fr; gap:8px 12px; font-size:13.5px; line-height:1.65; }
+  .fr dt { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); padding-top:4px; }
+  .fr dd { color:var(--body); }
+  .fr dd b { color:var(--ink); }
+
+  .tag { font-size:9px; letter-spacing:1.2px; text-transform:uppercase; padding:3px 8px; border-radius:999px; border:1px solid var(--ring); color:var(--body); background:var(--canvas); white-space:nowrap; }
+  .tag.measured { color:var(--good); border-color:var(--good-ring); background:var(--good-bg); }
+  .tag.inferred { color:var(--info); border-color:var(--info-ring); background:var(--info-bg); }
+  .tag.assumed { color:var(--warn); border-color:var(--warn-ring); background:var(--warn-bg); }
+  .tag.notmeasured { color:var(--bad); border-color:var(--bad-ring); background:var(--bad-bg); }
+  .assumption { margin-top:9px; padding:9px 11px; border-radius:8px; background:var(--warn-bg); border:1px solid var(--warn-ring); font-size:12.5px; color:var(--body); }
+
+  .camp { border:1px solid var(--ring); border-radius:12px; margin-bottom:16px; overflow:hidden; background:var(--ivory); }
+  .camp > h3 { background:var(--dark); color:var(--on-dark); padding:12px 16px; font-size:15px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; }
+  .camp > h3 .k { color:#b0aea5; }
+  .tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; margin-bottom:14px; border-bottom:1px solid var(--hairline-soft); scrollbar-width:thin; }
+  .tabs button { flex:0 0 auto; font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; letter-spacing:.2px;
+    background:var(--ivory); color:var(--body); border:1px solid var(--ring); border-bottom:none;
+    border-radius:9px 9px 0 0; padding:9px 15px; cursor:pointer; white-space:nowrap; margin-bottom:-1px; }
+  .tabs button:hover { background:var(--sand); color:var(--ink); }
+  .tabs button[aria-selected="true"] { background:var(--dark); color:var(--on-dark); border-color:var(--dark); font-weight:600; }
+  .tabs button .tk { display:block; font-size:10px; opacity:.7; margin-top:2px; letter-spacing:0; }
+  .panel[hidden] { display:none; }
+  .lede { font-size:19px; line-height:1.4; letter-spacing:-.2px; color:var(--ink); font-family:"Tiempos Text",Georgia,serif; }
+  .sub { font-size:14px; line-height:1.6; color:var(--body); margin-top:8px; }
+  .act { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-top:14px; padding-top:13px;
+    border-top:1px solid var(--hairline); font-size:14px; line-height:1.6; color:var(--ink); }
+  .act .do { flex:0 0 auto; font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px; letter-spacing:1.5px;
+    color:#faf9f5; background:var(--terracotta); border-radius:5px; padding:3px 7px; position:relative; top:-1px; }
+  .act .cert { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:9.5px; letter-spacing:1.2px;
+    text-transform:uppercase; color:var(--muted); font-style:normal; }
+  /* Pills - the default shape for any short list of facts. */
+  .pills { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 2px; }
+  .pill { border:1px solid var(--ring); border-radius:11px; background:var(--ivory); padding:10px 14px;
+    font-family:"JetBrains Mono",ui-monospace,monospace; min-width:0; }
+  .pill b { display:block; font-size:12.5px; color:var(--ink); font-weight:600; }
+  .pill span { display:block; font-size:10.5px; color:var(--muted); margin-top:3px; }
+  .pill em { font-style:normal; color:var(--terracotta); font-weight:600; }
+  .pill.big { padding:16px 20px; } .pill.big b { font-size:22px; letter-spacing:-.4px; }
+  .pill.bad { border-color:var(--bad-ring); background:var(--bad-bg); } .pill.bad b { color:var(--bad); }
+  .pill.good { border-color:var(--good-ring); background:var(--good-bg); } .pill.good b { color:var(--good); }
+  /* Action cards - one card per thing to delete, not one row per casualty. */
+  .acards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; margin:14px 0 2px; }
+  .acard { border:1px solid var(--ring); border-left:3px solid var(--muted); border-radius:11px;
+    background:var(--ivory); padding:15px 17px; }
+  .acard.critical { border-left-color:var(--bad); }
+  .acard h5 { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:15px; color:var(--ink); letter-spacing:-.2px; }
+  .acard .lvl { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px; color:var(--muted);
+    letter-spacing:.5px; margin-top:2px; }
+  .acard ul { list-style:none; margin:12px 0 0; padding:11px 0 0; border-top:1px solid var(--hairline); }
+  .acard li { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; color:var(--ink); padding:3px 0; }
+  .acard li i { font-style:normal; color:var(--muted); font-size:10.5px; }
+  .grph { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--muted); margin:22px 0 0; }
+  .acard .why { font-size:12.5px; color:var(--body); line-height:1.55; margin-top:11px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 2px; }
+  .chip { display:flex; flex-direction:column; gap:1px; border:1px solid var(--ring); border-radius:9px;
+    background:var(--ivory); padding:7px 11px; font-family:"JetBrains Mono",ui-monospace,monospace; }
+  .chip b { font-size:12px; font-weight:600; color:var(--ink); }
+  .chip span { font-size:10.5px; color:var(--muted); }
+  .chip.weak { border-color:var(--bad-ring); background:var(--bad-bg); }
+  .chip.weak b { color:var(--bad); }
+  .chip .mt { font-size:9px; letter-spacing:1.1px; color:var(--terracotta); margin-top:2px; }
+  .chk { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:11px 4px; border-bottom:1px solid var(--hairline); cursor:pointer; }
+  .chk:last-of-type { border-bottom:none; }
+  .chk input { flex:0 0 auto; width:16px; height:16px; accent-color:var(--terracotta); cursor:pointer; margin:0; position:relative; top:2px; }
+  .chk .t { font-weight:600; }
+  .chk:has(input:checked) .t { text-decoration:line-through; color:var(--muted); }
+  .chk:has(input:checked) .why { color:var(--muted); opacity:.6; }
+  .ag { border-top:1px solid var(--hairline-soft); padding:14px 16px; }
+  .ag > h4 { font-size:13.5px; margin-bottom:3px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:baseline; }
+  .agmeta { font-size:11px; color:var(--muted); font-family:"JetBrains Mono",ui-monospace,monospace; margin-bottom:11px; }
+
+  .grp { margin-top:12px; }
+  .grp h5 { font-size:11px; text-transform:uppercase; letter-spacing:1.3px; color:var(--muted); font-family:"JetBrains Mono",ui-monospace,monospace; display:flex; justify-content:space-between; gap:10px; padding-bottom:6px; border-bottom:1px solid var(--hairline); margin-bottom:6px; }
+  .row { display:flex; gap:9px; align-items:baseline; padding:5px 0; font-size:13px; border-bottom:1px solid var(--hairline); line-height:1.55; flex-wrap:wrap; }
+  .row:last-child { border-bottom:0; }
+  .row .t { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12.5px; color:var(--ink); }
+  .row .why { color:var(--muted); font-size:12px; }
+  .leave { font-size:12.5px; color:var(--muted); padding:9px 0 2px; font-style:italic; }
+  .more { padding-top:8px; }
+  .more button { font:inherit; font-size:11.5px; font-family:"JetBrains Mono",ui-monospace,monospace; background:var(--sand); border:1px solid var(--ring); color:var(--ink); padding:5px 11px; border-radius:7px; cursor:pointer; }
+  .more button:hover { background:var(--ring); }
+  .empty { font-size:13px; color:var(--muted); padding:10px 0; }
+  footer { padding:30px 0 60px; font-size:12px; color:var(--muted); line-height:1.8; }
+  @media (max-width:700px) { .fr{grid-template-columns:1fr;gap:2px 0} .fr dt{padding-top:8px} h1{font-size:26px} }
+
+/* 8 Sep 2026 - compressed sticky tab strip, block bands, level chips */
+.tabs { position:sticky; top:52px; z-index:5; background:var(--canvas,#f5f4ed); gap:4px; flex-wrap:wrap; overflow:visible; padding:8px 0 6px; margin-bottom:10px; border-bottom:1px solid var(--hairline-soft); }
+.tabs button { padding:5px 11px; font-size:11.5px; border-radius:999px; border:1px solid var(--ring); border-bottom:1px solid var(--ring); }
+.tabs button .tk { display:inline; font-size:10.5px; margin:0 0 0 6px; opacity:.65; }
+.tabs button .tk::before { content:"· "; }
+.band { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:baseline; padding:10px 16px; margin-top:6px; background:var(--sand); border-top:1px solid var(--ring); font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11.5px; letter-spacing:1.4px; text-transform:uppercase; color:var(--ink); font-weight:600; }
+.band .lv { font-weight:400; letter-spacing:.2px; text-transform:none; color:var(--muted); font-size:11px; }
+.lvl { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:9.5px; letter-spacing:.6px; text-transform:uppercase; padding:1px 6px; border-radius:999px; border:1px solid var(--ring); color:var(--muted); }
+.lvl.account-list { border-color:#c96442; color:#c96442; }
+</style>
+</head>
+
+<!--
+  SEARCH TERMS REPORT TEMPLATE
+
+  Fill the JSON island below and open the file. Nothing is fetched; it renders standalone.
+  The sample data is a worked example - replace it wholesale, keep the shape.
+
+  FOUR SECTIONS (rewritten 8 September 2026)
+  01 Keywords and negatives, by campaign - one tab per campaign, five blocks inside, in this order:
+     Keywords · Niches · Competitors · Cities · General negatives
+  02 Unblock these         - existing negatives that block a keyword or a winner
+  03 Where the traffic comes from - keyword + match type chips
+  04 Your calls            - only the questions the owner has to answer
+  The data shape is unchanged: negatives.campaigns[].adGroups[] carries negatives AND keywords.
+  The renderer routes each ad group by name: "niche"/"FLAG ONLY" -> Niches, "rival"/"YOUR CALL" ->
+  Competitors, "towns"/"cities" -> Cities (place rows inside other groups are pulled there too),
+  everything else -> General negatives. Keyword lists from every ad group -> Keywords.
+  Every count expands to its items. Lists show 10 with a "Show all N" toggle.
+  The full untruncated list always also lives in search-terms-plan.md.
+-->
+
+<script id="st-data" type="application/json">
+{
+  "business": "DJing.ca",
+  "account": "123-456-7890",
+  "currency": "CAD",
+  "window": "lifetime to 31 August 2026",
+  "pulled": "1 September 2026",
+  "totals": {
+    "terms": 45124,
+    "spend": 164075,
+    "leads": 3826,
+    "targetCpl": 45,
+    "targetSource": "context/business.md"
+  },
+  "trust": {
+    "hiddenShare": 0.427,
+    "keywordClicks": 32823,
+    "visibleClicks": 18819,
+    "finding": {
+      "what": "$65,051 of $164,128 spent cannot be traced to a search term - 39.6% of the money, 42.7% of the clicks.",
+      "soWhat": "Every total in this report is a floor, not a total. Four campaigns are above 50%.",
+      "nowWhat": "N-grams and tighter match types beat row-by-row review here. Start with Squeeze and DJ - City - LP.",
+      "certainty": "measured"
+    },
+    "campaigns": [
+      {
+        "name": "DJ - City - LP",
+        "hiddenShare": 0.91,
+        "spend": 12400,
+        "clicks": 8200
+      },
+      {
+        "name": "Squeeze",
+        "hiddenShare": 0.8,
+        "spend": 9100,
+        "clicks": 5300
+      },
+      {
+        "name": "Weddings Toronto",
+        "hiddenShare": 0.31,
+        "spend": 44120,
+        "clicks": 9800
+      }
+    ],
+    "hiddenCostShare": 0.396,
+    "spend": 164128,
+    "visibleCost": 99077,
+    "hiddenCost": 65051,
+    "visibleCpc": 5.26,
+    "hiddenCpc": 4.72,
+    "why": "Since September 2020 Google only lists a search term if enough different people searched it. Anything below that threshold is rolled into a single \"Other search terms\" line. Google's stated reason is privacy - a rare search can identify a person. The effect is that most of the long tail is invisible to everyone, including Google's own API. This is not a limit of this report or of your account: the data is not available to anybody.",
+    "recover": [
+      {
+        "name": "Search Terms Insights (Campaigns → Insights)",
+        "note": "built from ALL queries including hidden ones, grouped as themes. Will not reconcile with these numbers - a rougher second view, never a cross-check"
+      },
+      {
+        "name": "N-grams on the visible half",
+        "note": "the same keywords generate both halves, so a token wasting money here is wasting it there. Highest-value move above 40%"
+      },
+      {
+        "name": "Tighter match types",
+        "note": "exact and phrase hide far less than broad - this shrinks the hidden share structurally"
+      },
+      {
+        "name": "Offline conversions from the CRM",
+        "note": "lets Smart Bidding self-correct on junk nobody can see"
+      }
+    ]
+  },
+  "sources": {
+    "leadsNegatives": true,
+    "finding": {
+      "what": "Two broad keywords caught $44,000 across 11,357 distinct search terms.",
+      "soWhat": "The negatives batch below recovers $670. The match type is the actual problem, and it is 65x bigger.",
+      "nowWhat": "Phrase-match both keywords, then re-run this pass. Route to /keywords.",
+      "certainty": "measured"
+    },
+    "items": [
+      {
+        "name": "wedding dj near me · BROAD · Weddings Toronto / Regular",
+        "spend": 28900,
+        "note": "7,214 terms · $4,100 zero-lead"
+      },
+      {
+        "name": "dj for hire · BROAD · Corporate / Regular",
+        "spend": 15100,
+        "note": "4,143 terms · $2,300 zero-lead"
+      }
+    ],
+    "matchedHow": [
+      {
+        "name": "BROAD",
+        "spend": 44000,
+        "conv": 2890,
+        "note": "89% of spend"
+      },
+      {
+        "name": "PHRASE",
+        "spend": 4100,
+        "conv": 610
+      },
+      {
+        "name": "EXACT",
+        "spend": 1975,
+        "conv": 326
+      }
+    ],
+    "crossAdGroup": [
+      {
+        "name": "dj lessons",
+        "spend": 242,
+        "note": "2 ad groups: Weddings/Regular $212 · Corporate/Regular $30"
+      }
+    ]
+  },
+  "blocked": {
+    "checked": 137,
+    "finding": {
+      "what": "0 of 137 existing negatives block a keyword you bid on. 2 block search terms that had already converted.",
+      "soWhat": "Two negatives are switching off demand that was paying - $180 of recorded conversions before they were blocked.",
+      "nowWhat": "Confirm each was deliberate. Nothing is removed without your yes.",
+      "certainty": "measured"
+    },
+    "items": [
+      {
+        "name": "-\"dj rental\" · phrase · account list",
+        "spend": 120,
+        "conv": 3,
+        "note": "blocked a term with 3 recorded leads"
+      },
+      {
+        "name": "-\"hiring a dj\" · phrase · Weddings Toronto",
+        "spend": 60,
+        "conv": 2,
+        "note": "\"hiring\" here means booking, not a job search"
+      }
+    ]
+  },
+  "negatives": {
+    "total": 29,
+    "recovered": 670,
+    "finding": {
+      "what": "29 phrase and exact negatives, worth $670 across the account's lifetime.",
+      "soWhat": "About $5 a month. Real, but small next to the match-type finding above.",
+      "nowWhat": "Approve the batch, then push at the level shown on each line.",
+      "certainty": "inferred",
+      "assumption": null
+    },
+    "campaigns": [
+      {
+        "name": "Weddings Toronto",
+        "spend": 44120,
+        "leads": 812,
+        "cpl": 54.33,
+        "hiddenShare": 0.31,
+        "toAction": "12 negatives · 47 keywords",
+        "adGroups": [
+          {
+            "name": "Regular",
+            "visibleSpend": 22010,
+            "zeroLeadSpend": 412,
+            "cpl": 55.02,
+            "caughtBy": "wedding dj near me (BROAD)",
+            "negatives": [
+              {
+                "name": "\"dj lessons\" · phrase · ad group",
+                "spend": 212,
+                "clicks": 44,
+                "conv": 0,
+                "note": "Inferred: 9 of 10 results are training courses"
+              },
+              {
+                "name": "\"dj school\" · phrase · ad group",
+                "spend": 98,
+                "clicks": 21,
+                "conv": 0,
+                "note": "Inferred: 9 of 10 training courses"
+              },
+              {
+                "name": "\"virtual dj\" · phrase · account list",
+                "spend": 61,
+                "clicks": 14,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 software downloads"
+              },
+              {
+                "name": "\"dj soda\" · exact · ad group",
+                "spend": 41,
+                "clicks": 9,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 concert ticketing, touring artist"
+              },
+              {
+                "name": "\"dj course\" · phrase · account list",
+                "spend": 55,
+                "clicks": 12,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 training courses"
+              },
+              {
+                "name": "\"serato\" · phrase · account list",
+                "spend": 48,
+                "clicks": 11,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 DJ software"
+              },
+              {
+                "name": "\"speaker rental\" · phrase · ad group",
+                "spend": 44,
+                "clicks": 10,
+                "conv": 0,
+                "note": "Inferred: 8 of 10 equipment hire, not a DJ"
+              },
+              {
+                "name": "\"dj controller\" · phrase · ad group",
+                "spend": 39,
+                "clicks": 9,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 hardware retail"
+              },
+              {
+                "name": "\"how to dj\" · phrase · account list",
+                "spend": 34,
+                "clicks": 8,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 tutorials"
+              },
+              {
+                "name": "\"dj equipment\" · phrase · ad group",
+                "spend": 31,
+                "clicks": 7,
+                "conv": 0,
+                "note": "Inferred: 9 of 10 retail"
+              },
+              {
+                "name": "\"become a dj\" · phrase · account list",
+                "spend": 28,
+                "clicks": 6,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 career guides"
+              },
+              {
+                "name": "\"dj mixer\" · phrase · ad group",
+                "spend": 22,
+                "clicks": 5,
+                "conv": 0,
+                "note": "Inferred: 10 of 10 hardware retail"
+              }
+            ],
+            "keywords": [
+              {
+                "name": "[ottawa dj services] · exact",
+                "conv": 25.9,
+                "note": "unbid winner · $33 a lead · $193 value each"
+              },
+              {
+                "name": "[djs ottawa] · exact",
+                "conv": 18.2,
+                "note": "unbid winner · $19 a lead"
+              },
+              {
+                "name": "[dj ottawa wedding] · exact",
+                "conv": 12.4,
+                "note": "unbid winner · $21 a lead · pair: -\"dj ottawa wedding\" into Corporate / Regular"
+              }
+            ],
+            "leaveAlone": {
+              "terms": 1204,
+              "spend": 8100,
+              "why": "under 1x target cost per lead with no leads"
+            }
+          }
+        ]
+      }
+    ],
+    "geography": {
+      "finding": {
+        "what": "Seven towns outside the named service area spent $6,531 and returned 156 leads at $42 each.",
+        "soWhat": "At or under your $45 target. If you serve them this is your cheapest demand; if you do not, it is your biggest leak.",
+        "nowWhat": "Answer the question first. Serve them: campaign candidates. Do not: geo negatives.",
+        "certainty": "assumed",
+        "assumption": "Assumes DJing.ca does NOT serve these towns. Nothing in context/business.md says either way, and this number flips from opportunity to waste depending on the answer."
+      },
+      "items": [
+        {
+          "name": "Mississauga",
+          "spend": 1840,
+          "conv": 44,
+          "note": "$42 a lead"
+        },
+        {
+          "name": "Brampton",
+          "spend": 1210,
+          "conv": 29,
+          "note": "$42 a lead"
+        },
+        {
+          "name": "Hamilton",
+          "spend": 980,
+          "conv": 23,
+          "note": "$43 a lead"
+        },
+        {
+          "name": "Surrey",
+          "spend": 910,
+          "conv": 22,
+          "note": "$41 a lead"
+        },
+        {
+          "name": "Abbotsford",
+          "spend": 720,
+          "conv": 17,
+          "note": "$42 a lead"
+        },
+        {
+          "name": "Langley",
+          "spend": 520,
+          "conv": 12,
+          "note": "$43 a lead"
+        },
+        {
+          "name": "Laval",
+          "spend": 351,
+          "conv": 9,
+          "note": "$39 a lead"
+        }
+      ]
+    }
+  },
+  "harvest": {
+    "total": 321,
+    "leads": 1056,
+    "value": 19441,
+    "finding": {
+      "what": "321 converting search terms are not keywords anywhere - 1,056 leads at or under target.",
+      "soWhat": "Worth $19,441, but nearly every ad group is named \"Regular\", so all 321 would serve the same ad and the same page.",
+      "nowWhat": "Fix the match types and the ad group structure first. This batch waits - promoting into one generic group buys almost nothing.",
+      "certainty": "measured"
+    },
+    "blockedByStructure": true
+  },
+  "brandSplit": {
+    "available": true,
+    "brand": {
+      "terms": 84,
+      "spend": 2100,
+      "conv": 84,
+      "cpl": 25.0
+    },
+    "nonBrand": {
+      "terms": 45040,
+      "spend": 161975,
+      "conv": 3742,
+      "cpl": 43.29
+    },
+    "finding": {
+      "what": "Brand terms convert at $25 a lead. Everything else costs $43.",
+      "soWhat": "The blended $42.88 you have been reading is brand traffic flattering cold acquisition. Non-brand is the number that matters and it is 73% higher.",
+      "nowWhat": "Judge non-brand terms against $43, not the blend. Thresholds in this run are already split.",
+      "certainty": "measured"
+    }
+  },
+  "doFirst": [
+    {
+      "name": "Phrase-match the two broad keywords",
+      "note": "$44,000 of spend, 11,357 terms · biggest single lever here",
+      "certainty": "measured"
+    },
+    {
+      "name": "Answer the seven-town service-area question",
+      "note": "$6,531 flips between opportunity and waste on your answer",
+      "certainty": "assumed"
+    },
+    {
+      "name": "Confirm the two existing negatives that blocked converting terms",
+      "note": "$180 of recorded leads switched off",
+      "certainty": "measured"
+    },
+    {
+      "name": "Approve the 29 negatives",
+      "note": "$670 lifetime · about $5 a month",
+      "certainty": "inferred"
+    }
+  ],
+  "notMeasured": [
+    "42.7% of clicks are on terms Google will not name. Search Terms Insights covers all queries including hidden ones, but will not reconcile with this report.",
+    "Conversion value is present on 61% of leads. Terms without it are judged on lead count alone.",
+    "Which towns the business serves. Asked, unanswered - the geography block stays Assumed until it is."
+  ],
+  "_selftest_bug_marker": null,
+  "rivalCall": {
+    "count": 3,
+    "spendNoLeads": 212,
+    "converting": [
+      {
+        "name": "acme plumbing",
+        "conv": 2,
+        "cpl": 31
+      }
+    ],
+    "note": "Someone googling a rival and landing on you is a buyer with no loyalty. Stop, and the names go in as exact negatives. Keep, and they stay open."
+  }
+}
+</script>
+
+<body>
+<div class="nav"><div class="rail">
+  <span class="wordmark display">Search terms<span class="kicker" id="acct"></span></span>
+  <nav class="jump" id="jump"></nav>
+</div></div>
+
+<div class="rail">
+  <header class="hero">
+    <div class="kicker">Search terms report</div>
+    <h1 class="display" id="title">Search terms</h1>
+    <div class="meta" id="meta"></div>
+    <div id="trustbanner"></div>
+  </header>
+</div>
+
+<main id="main"></main>
+
+<div class="rail"><footer id="foot"></footer></div>
+
+<script>
+(function () {
+  "use strict";
+  // Four sections. 01 is one tab per campaign with five blocks: keywords, niches, competitors, cities, general negatives.
+  // Rewritten 8 September 2026. The six-question shape (trust essay, waste headline,
+  // harvest headline, do-first checklist) was cut because a member skims this page once.
+  var D = JSON.parse(document.getElementById("st-data").textContent);
+  var CUR = D.currency || "CAD";
+  var uid = 0;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function money(n) {
+    if (n == null || isNaN(n)) return "";
+    return "$" + Number(n).toLocaleString("en-CA", { maximumFractionDigits: 0 }) + " " + CUR;
+  }
+  function money2(n) {
+    if (n == null || isNaN(n)) return "";
+    return "$" + Number(n).toFixed(2) + " " + CUR;
+  }
+  function pct(n) { return n == null ? "" : Math.round(n * 1000) / 10 + "%"; }
+  function num(n) { return n == null ? "" : Number(n).toLocaleString("en-CA"); }
+
+  // One line of context plus the action. No what / so what / how sure blocks on this page;
+  // the graded version lives in search-terms-plan.md.
+  function lede(f) {
+    if (!f) return "";
+    return '<div class="finding">' +
+      (f.what ? '<p class="lede">' + esc(f.what) + "</p>" : "") +
+      (f.nowWhat ? '<p class="act"><span class="do">DO</span>' + esc(f.nowWhat) + "</p>" : "") +
+      (f.certainty === "assumed" && f.assumption
+        ? '<div class="assumption"><b>The assumption:</b> ' + esc(f.assumption) + "</div>" : "") +
+      "</div>";
+  }
+
+  function pills(items, opts) {
+    if (!items || !items.length) return "";
+    opts = opts || {};
+    return '<div class="pills">' + items.map(function (it) {
+      var cls = it.tone ? " " + it.tone : "";
+      var bits = [];
+      if (it.spend != null) bits.push(money(it.spend));
+      if (it.conv != null) bits.push(num(it.conv) + " leads");
+      if (it.clicks != null) bits.push(num(it.clicks) + " clicks");
+      if (it.cpl != null) bits.push("<em>" + money2(it.cpl) + "/lead</em>");
+      return '<div class="pill' + (opts.big ? " big" : "") + cls + '"' +
+        (it.note ? ' title="' + esc(it.note) + '"' : "") + ">" +
+        "<b>" + esc(String(it.name).replace(/`/g, "")) + "</b>" +
+        "<span>" + bits.join(" · ") + "</span></div>";
+    }).join("") + "</div>";
+  }
+
+  function actionCards(rows) {
+    if (!rows || !rows.length) return "";
+    return '<div class="acards">' + rows.map(function (r) {
+      return '<div class="acard ' + esc(r.severity || "") + '">' +
+        "<h5>Delete " + esc(r.neg) + "</h5>" +
+        '<div class="lvl">' + esc(r.where) + "</div>" +
+        "<ul>" + (r.frees || []).map(function (f) {
+          return "<li>" + esc(f.kw) + " <i>" + esc(f.campaign + " / " + f.ag) + "</i></li>";
+        }).join("") + "</ul>" +
+        (r.why ? '<div class="why">' + esc(r.why) + "</div>" : "") + "</div>";
+    }).join("") + "</div>";
+  }
+
+  // Ten rows, then "Show all N". The full list always also lives in search-terms-plan.md.
+  function list(items, label, total) {
+    if (!items || !items.length) return "";
+    var n = total || items.length;
+    var id = "more" + ++uid;
+    var head = items.slice(0, 10), rest = items.slice(10);
+    function row(it) {
+      var bits = "";
+      if (it.spend != null) bits += ' <span class="k">' + money(it.spend) + "</span>";
+      if (it.clicks != null) bits += ' <span class="k">' + num(it.clicks) + " clicks</span>";
+      if (it.conv != null) bits += ' <span class="k">' + num(it.conv) + " leads</span>";
+      if (it.hiddenShare != null) bits += ' <span class="k">' + pct(it.hiddenShare) + " hidden</span>";
+      if (it.cpl != null) bits += ' <span class="k">' + money2(it.cpl) + " a lead</span>";
+      var nm = String(it.name), parts = nm.split(" · "), lvl = "";
+      if (parts.length === 3 && /^(CAMPAIGN|ACCOUNT LIST|AD GROUP)$/i.test(parts[2])) {
+        lvl = '<span class="lvl ' + parts[2].toLowerCase().replace(" ", "-") + '">' + esc(parts[2].toLowerCase()) + "</span>";
+        nm = parts[0] + " · " + parts[1];
+      }
+      return '<div class="row"><span class="t">' + esc(nm) + "</span>" + lvl + bits +
+        (it.note ? '<span class="why">' + esc(it.note) + "</span>" : "") + "</div>";
+    }
+    var html = '<div class="grp"><h5><span>' + esc(label) + "</span><span>" + num(n) + " in total</span></h5>" +
+      head.map(row).join("");
+    if (rest.length) {
+      html += '<div id="' + id + '" style="display:none">' + rest.map(row).join("") + "</div>" +
+        '<div class="more"><button data-t="' + id + '" data-n="' + n + '">Show all ' + num(n) + "</button></div>";
+    }
+    return html + "</div>";
+  }
+
+  var sections = [];
+  function section(id, label, title, body, nav) {
+    if (!body) body = '<div class="empty">Nothing found this run.</div>';
+    sections.push({ id: id, label: label, nav: nav || label });
+    return '<section id="' + id + '"><div class="rail"><div class="kicker">' + esc(label) +
+      "</div><h2 class=display>" + esc(title) + "</h2>" + body + "</div></section>";
+  }
+
+  function shortName(c) { return String(c.name).split(" · ")[0].split(" - ")[0].trim() || c.name; }
+
+  // ---------- header ----------
+  var T = D.totals || {};
+  document.title = "Search terms · " + (D.business || "");
+  document.getElementById("title").textContent = D.business || "Search terms";
+  document.getElementById("acct").textContent = D.account ? " " + D.account : "";
+  var B = D.brandSplit || {};
+  document.getElementById("meta").innerHTML =
+    "Pulled " + esc(D.pulled) + " · " + esc(D.window) + "<br>" +
+    num(T.terms) + " terms · " + money(T.spend) + " · " + num(T.leads) + " leads" +
+    (T.targetCpl != null
+      ? "<br>Every threshold below uses <b>" + money(T.targetCpl) + " a lead</b>" +
+        (B.available && B.brand && B.nonBrand
+          ? " (cold traffic · brand leads cost " + money2(B.brand.cpl).replace(" " + CUR, "") + ")"
+          : "")
+      : '<br><b>No target cost per lead set</b> - every threshold below is assumed.');
+
+  var tr = D.trust || {};
+  if (tr.hiddenShare != null) {
+    var hot = tr.hiddenShare >= 0.4;
+    document.getElementById("trustbanner").innerHTML =
+      '<div class="banner' + (hot ? " bad" : "") + '"><b>Google hides ' + pct(tr.hiddenShare) +
+      " of clicks.</b> " + (hot
+        ? "Every number below is a floor, not a total."
+        : "Most of the spend is visible, so the totals below are close to complete.") + "</div>";
+  }
+
+  // ---------- sections ----------
+  var html = "";
+  var N = D.negatives || {};
+  var camps = N.campaigns || [];
+
+  // Every campaign-level section is a horizontal tab strip - one campaign visible at a time.
+  var tabSeq = 0;
+  function tabbed(panels) {
+    if (!panels.length) return "";
+    var btns = "", bodies = "";
+    panels.forEach(function (p, i) {
+      var id = "t" + (++tabSeq);
+      btns += '<button type="button" role="tab" id="tb' + id + '" aria-controls="tp' + id + '"' +
+        ' aria-selected="' + (i === 0 ? "true" : "false") + '">' + esc(shortName(p.c)) +
+        (p.tk ? '<span class="tk">' + p.tk + "</span>" : "") + "</button>";
+      bodies += '<div class="panel" id="tp' + id + '" role="tabpanel" aria-labelledby="tb' + id + '"' +
+        (i === 0 ? "" : " hidden") + '><div class="camp"><h3><span>' + esc(p.title || p.c.name) + "</span>" +
+        (p.k ? '<span class="k">' + p.k + "</span>" : "") + "</h3>" + p.inner + "</div></div>";
+    });
+    // One campaign (the normal member account) gets no tab strip - just its panel.
+    return (panels.length > 1 ? '<div class="tabs" role="tablist">' + btns + "</div>" : "") + bodies;
+  }
+  function agBlock(g, meta, body) {
+    return '<div class="ag"><h4><span>' + esc(g.name) + "</span></h4>" +
+      (meta ? '<div class="agmeta">' + meta + "</div>" : "") + body + "</div>";
+  }
+
+  // 01 - one tab per campaign, five blocks inside in the order Jono works them (8 Sep 2026):
+  // keywords, niches, competitors, cities, general negatives.
+  function isNiche(g) { return /niche|FLAG ONLY/i.test(g.name || ""); }
+  function isRival(g) { return /rival|YOUR CALL/i.test(g.name || ""); }
+  function isCities(g) { return /cities|towns/i.test(g.name || ""); }
+  function isPlace(r) { return /^a place you do not serve/i.test(r.note || ""); }
+  function block(title, meta, body) {
+    if (!body) return "";
+    return '<div class="ag"><h4><span>' + esc(title) + "</span></h4>" +
+      (meta ? '<div class="agmeta">' + meta + "</div>" : "") + body + "</div>";
+  }
+  var H = D.harvest || {};
+  var panels = [];
+  camps.forEach(function (c) {
+    var ags = c.adGroups || [];
+    var kw = "", niche = "", rival = "", cities = "", general = "";
+    var cityRows = [];
+    ags.forEach(function (g) {
+      if (g.keywords && g.keywords.length) kw += block("Ad group: " + g.name, "", list(g.keywords, "Add as keywords"));
+    });
+    ags.forEach(function (g) {
+      if (isNiche(g)) niche += block(g.name, esc(g.caughtBy || ""), list(g.negatives, "Flag only, nothing staged"));
+      else if (isRival(g)) rival += block(g.name, esc(g.caughtBy || ""), list(g.negatives, "Your call"));
+      else if (isCities(g)) cityRows = cityRows.concat(g.negatives || []);
+    });
+    ags.forEach(function (g) {
+      if (isNiche(g) || isRival(g) || isCities(g)) return;
+      var rows = (g.negatives || []).filter(function (r) { return !isPlace(r); });
+      cityRows = cityRows.concat((g.negatives || []).filter(isPlace));
+      var body = list(rows, "Add as negatives") +
+        (g.leaveAlone
+          ? '<div class="leave">Leave alone · ' + num(g.leaveAlone.terms) + " terms · " +
+            money(g.leaveAlone.spend) + " — " + esc(g.leaveAlone.why) + ".</div>"
+          : "");
+      if (!rows.length && !g.leaveAlone) return;
+      var name = /^Add these/i.test(g.name) ? "Batch · " + rows.length + " negatives" :
+                 /single-word/i.test(g.name) ? g.name : "Found in ad group: " + g.name;
+      general += block(name, (/^Add these/i.test(g.name) ? "" : "Zero-lead spend " + money(g.zeroLeadSpend) +
+        (g.cpl != null ? " · " + money2(g.cpl) + " a lead" : "")) +
+        (g.caughtBy ? (/^Add these/i.test(g.name) ? "" : " · ") + "caught by " + esc(g.caughtBy) : ""), body);
+    });
+    cityRows.sort(function (x, y) { return (y.spend || 0) - (x.spend || 0); });
+    cities = cityRows.length ? block(cityRows.length + " towns you do not serve", "each one a campaign negative here · phrase", list(cityRows, "Add as negatives")) : "";
+    var inner = "";
+    function band(t, lvl) { return '<div class="band"><span>' + t + "</span><span class=\"lv\">" + lvl + "</span></div>"; }
+    if (kw) inner += band("Keywords", "added to the ad group named, paused") + kw;
+    if (niche) inner += band("Niches", "flag only · nothing staged · your call") + niche;
+    if (rival) inner += band("Competitors", "exact · level on each row · your call") + rival;
+    if (cities) inner += band("Cities", "phrase · level on each row") + cities;
+    if (general) inner += band("General negatives", "level on each row · narrowest level that is still true") + general;
+    if (inner) panels.push({ c: c, inner: inner, tk: "$" + Number(c.cpl).toFixed(0) + "/lead",
+      k: money(c.spend) + " · " + num(c.leads) + " leads · " + money2(c.cpl) + " a lead · " +
+         pct(c.hiddenShare) + " hidden · " + esc(c.toAction || "") });
+  });
+  html += section("s01", "01", "Keywords and negatives, by campaign",
+    (H.finding && H.finding.nowWhat ? '<div class="finding"><p class="act"><span class="do">DO</span>' +
+      esc(H.finding.nowWhat) + "</p></div>" : "") + tabbed(panels), "01 Campaigns");
+
+  // 02 Unblock - existing negatives that block a keyword you bid on or a term that converted.
+  var BL = D.blocked || {};
+  html += section("s02", "02", "Unblock these",
+    (BL.blockers && BL.blockers.length ? lede(BL.finding) : "") + actionCards(BL.blockers) +
+    (BL.killedWinners && BL.killedWinners.length
+      ? '<h5 class="grph">' + num(BL.killedWinners.length) + " winners you already blocked</h5>" + pills(BL.killedWinners)
+      : ""), "02 Unblock");
+
+  // 03 Source - which keyword and match type let the traffic in.
+  var S = D.sources || {};
+  html += section("s03", "03", "Where the traffic comes from",
+    lede(S.finding) + ((S.items || []).length
+      ? '<div class="chips">' + S.items.map(function (it) {
+          var weak = it.cpl != null && T.targetCpl ? it.cpl > T.targetCpl * 1.5 : /weak/i.test(it.note || "");
+          return '<div class="chip' + (weak ? " weak" : "") + '" title="' + esc(it.note || "") + '">' +
+            "<b>" + esc(it.name.split(" · ")[0]) + "</b>" +
+            '<span class="mt">' + esc((it.name.split(" · ")[1] || "").toUpperCase()) + "</span>" +
+            "<span>" + money(it.spend) + (it.cpl != null ? " · " + money2(it.cpl) + "/lead" : "") + "</span></div>";
+        }).join("") + "</div>"
+      : ""), "03 Source");
+
+  // 04 Your calls - the questions only the owner can answer. Lists live in the tabs above.
+  var calls = "";
+  (D.doFirst || []).forEach(function (d) {
+    if (D.rivalCall && /competitor|rival/i.test(d.name || "")) return;   // the both-sides card below replaces it
+    if (d.certainty === "assumed" || /^(decide|answer|choose|confirm)/i.test(d.name || ""))
+      calls += '<div class="finding"><p class="lede">' + esc(d.name) + "</p>" +
+        (d.note ? '<p class="act">' + esc(d.note) + "</p>" : "") + "</div>";
+  });
+  // The competitor call shows BOTH sides: what rival names cost with no leads, and the rival names
+  // that converted. One line was not enough for a business decision (Jono, 8 Sep 2026).
+  var RC = D.rivalCall;
+  if (RC && (RC.converting || []).length) {
+    calls += '<div class="finding"><p class="lede">Competitor names: keep buying them or stop?</p>' +
+      '<div class="pills">' +
+      '<div class="pill big"><b>' + num(RC.count) + ' rival names, no leads</b><span>' + money(RC.spendNoLeads) + ' spent</span></div>' +
+      RC.converting.map(function (r) {
+        return '<div class="pill big good"><b>' + esc(r.name) + '</b><span>' + num(r.conv) + ' leads · <em>' + money2(r.cpl) + '/lead</em></span></div>';
+      }).join("") + "</div>" +
+      (RC.note ? '<p class="act">' + esc(RC.note) + "</p>" : "") + "</div>";
+  }
+  if (N.geography) calls += lede(N.geography.finding) + list(N.geography.items, "The towns");
+  html += section("s04", "04", "Your calls", calls, "04 Your calls");
+
+  document.getElementById("main").innerHTML = html;
+
+  Array.prototype.forEach.call(document.querySelectorAll(".tabs"), function (strip) {
+    var btns = strip.querySelectorAll('button[role="tab"]');
+    Array.prototype.forEach.call(btns, function (b) {
+      b.addEventListener("click", function () {
+        Array.prototype.forEach.call(btns, function (o) {
+          o.setAttribute("aria-selected", o === b ? "true" : "false");
+          var p = document.getElementById(o.getAttribute("aria-controls"));
+          if (p) { if (o === b) { p.removeAttribute("hidden"); } else { p.setAttribute("hidden", ""); } }
+        });
+      });
+    });
+  });
+
+  document.getElementById("jump").innerHTML = sections.map(function (s) {
+    return '<a href="#' + s.id + '">' + esc(s.nav) + "</a>";
+  }).join("");
+
+  document.getElementById("foot").innerHTML =
+    "The full untruncated lists live in <b>search-terms-plan.md</b>. This page shows the top 10 of each. " +
+    "Nothing in the account was changed to produce it.";
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-t]");
+    if (!b) return;
+    var box = document.getElementById(b.getAttribute("data-t"));
+    var open = box.style.display === "none";
+    box.style.display = open ? "block" : "none";
+    b.textContent = open ? "Show fewer" : "Show all " + num(Number(b.getAttribute("data-n")));
+  });
+})();
+</script>
+</body>
+</html>
