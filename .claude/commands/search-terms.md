@@ -28,7 +28,7 @@ threshold-based finding `Assumed`, and say the assumption inline every time a nu
 Also read the business name for `--brand`. Brand terms convert far better than cold traffic, so one
 blended target mis-grades both sides - brand junk survives and non-brand winners look like losers.
 
-**1. Pull.** `python3 code/search_terms_report.py --customer <10-digit ID> --brand "<business name>,<variants>" --out code/cache/search-terms.json` (lifetime; add `--days N` only for a recent slice).
+**1. Pull.** `python3 code/search_terms_report.py --customer <10-digit ID> --out code/cache/search-terms.json` (lifetime; add `--days N` only for a recent slice). The script reads `--sells`, `--not-offered` and `--serve-areas` from `context/business.md` (What we do · What we DON'T do · Service area) and `--brand` from `BUSINESS_NAME` in `.env` on its own, and prints which it filled and which came up empty. Pass a flag by hand only to override - `--brand "<name>,<variants>"` when the name has spellings the searches use.
 
 **⛔ Confirm the account before pulling.** The connection may reach several accounts and `.env` names only
 one. A report built against the wrong account looks completely normal and is completely worthless. Say
@@ -215,25 +215,39 @@ Pattern matching missed entire categories - business names above all, because wo
 a rule. `soundfonix`, `van dj co` and `oxygen entertainment` all walked through a regex pass.
 Jono's instruction on 1 September 2026: ALL search terms are analyzed, not just scanned.
 
-Run `python3 code/judge_terms.py`. It reads every distinct zero-lead term in the live campaigns
-through the Claude API in batches and gives each one verdict: BUY / SERVICE / NAME / PLACE /
-MARKET / TRADE / JOB / INFO / NICHE. It caches to `code/cache/term-verdicts.json` and resumes,
-so a re-run only judges new terms. Nothing is skipped for being cheap - a $3 term that is wrong
-is still wrong, and it recurs. When unsure the judge says BUY: never negate a buyer. Terms carrying
-the brand ("djing", "djing ca") are filtered before judging - the model once graded "djing ca
-reviews" as a marketplace and it reached the staged list. A brand term is never a negative.
+Run `python3 code/judge_terms.py`. It builds the queue from the pull - every distinct zero-lead
+term in the enabled campaigns, brand terms set aside, anything already judged skipped - and writes
+`code/cache/judge/todo.md`: a brief built from `context/business.md` (what they sell, what they
+refuse, where they serve - nothing about the business lives in the script) followed by every term,
+numbered, worst spend first. **Judge them yourself, in this session, against that brief.** One
+verdict per term - BUY / SERVICE / NAME / PLACE / MARKET / TRADE / JOB / INFO / NICHE - written to
+`code/cache/judge/verdicts.txt` as `<index>|<VERDICT>|<four words of reason>`, then
+`python3 code/judge_terms.py --ingest` validates every line, merges it into
+`code/cache/term-verdicts.json` and rewrites the todo with what is left. Work the file top to
+bottom and ingest as you go; the cache resumes, so a re-run only lists what is still unjudged.
+Nothing is skipped for being cheap - a $3 term that is wrong is still wrong, and it recurs. When
+unsure the judge says BUY: never negate a buyer. Brand terms (`--brand`, else `BUSINESS_NAME` in
+`.env`) are removed before judging - the model once graded a "<brand> reviews" search as a
+marketplace and it reached the staged list. A brand term is never a negative.
+
+**Past a few hundred terms, use the API instead:** add `ANTHROPIC_API_KEY` to `.env` and run
+`python3 code/judge_terms.py --api` - the same brief, batches of 120, the same cache. Optional; a
+member without a key loses nothing but time. `--limit N` judges only the N worst-spend terms this
+run, `--all-campaigns` includes paused campaigns.
 
 Then run `python3 code/build_search_terms_report.py` - step 3, the assembler. It turns the
-verdicts into the staged batches inside `search-terms-report.html` and enforces every safety
-rule in code: brand filter, EXACT for names and marketplaces, the rival CPC floor, niche
-flag-only, and the conflict check that drops any candidate phrase-blocking a live keyword or
-a converting term. The hand-assembled version of 1 September 2026 skipped that check and
-staged "wedding" as an Ottawa phrase negative - it would have blocked terms carrying 154
-leads. The held-back count is printed per campaign and shown in the report. Never assemble
-the report by hand.
+verdicts into the staged batches inside `search-terms-report.html` - one tab per campaign, matched
+to the pull's campaign names, with a tab added for any judged campaign the report is missing - and
+enforces every safety rule in code: the brand filter, EXACT for names and marketplaces, the rival
+CPC floor, niche flag-only, and the conflict check that drops any candidate phrase-blocking a live
+keyword or a converting term. It pulls the account's existing negatives and enabled keywords itself
+into `code/cache/negatives-existing.json` (`--refresh-negatives` to pull again) and writes the
+live campaign-negative count into every tab's `toAction`. The hand-assembled version of 1 September
+2026 skipped that check and staged "wedding" as a phrase negative in a city campaign - it would
+have blocked terms carrying 154 leads. The held-back count is printed per campaign and shown in
+the report. Never assemble the report by hand.
 
-The pattern miner (`code/mine_negatives.py`) survives only as a pre-filter sanity check. The
-verdicts file is the source of truth for what goes in the report.
+The verdicts file is the source of truth for what goes in the report.
 
 ### ⛔ A ONE-WORD PHRASE NEGATIVE IS THE MOST DANGEROUS THING THIS COMMAND CAN WRITE
 
@@ -249,7 +263,7 @@ every campaign. Jono caught this on 1 September 2026 and it is now a hard rule.
   bare search and leaves `<name> dj` alive.
 - **A service you do not sell stays PHRASE.** photobooth, saxophonist, officiant. Any search
   carrying the word is wrong however it is worded - but confirm from the business file that the
-  service really is not sold. There was no DJing.ca business file in this account and `photo booth`
+  service really is not sold. The first account this ran on had no business file and `photo booth`
   was proposed blind; the conflict check later found `wedding dj and photo booth` had converted.
 - **A place stays PHRASE, but never as a fragment.** `deer` is not Red Deer, `grande` is not
   Grande Prairie, `falls` is not Niagara Falls. Write the whole town name.
