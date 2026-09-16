@@ -109,6 +109,9 @@ whole check safe, and `references/search-terms.md` is unambiguous about why:
   show the converting rows and ask. Out-of-area terms in particular convert when the radius is wrong.
 - **`not_offered` or `serve_areas` empty means the check DID NOT RUN.** Report it as not measured, never
   as a clean result. `intent_inputs` in the pull carries both flags.
+- **Empty is a question, not a shrug.** If `--not-offered` or `--serve-areas` came up empty, ask the owner now
+  ("What do you NOT sell?" · "Which places do you serve?"), write the answers into `context/business.md` under
+  `## What we DON'T do` and `## Service area`, and re-run the pull. The next run reads them without asking.
 
 **What gate 0 cannot catch: competitor and performer names.** "music by starlite" is not a pattern, it is
 a name. Those come from the SERP check at gate 4, or from `competitor-ads.md` if `/scrape-competitors` has

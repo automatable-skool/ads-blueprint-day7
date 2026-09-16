@@ -10,9 +10,8 @@ is wrong, and it recurs.
 
 Nothing about the business lives in this file. What they sell, what they refuse
 and where they serve come from context/business.md; the brand comes from --brand
-or BUSINESS_NAME in .env. (First written 1 September 2026 against a wedding DJ
-account with the DJ written in; rewritten 16 September 2026 after a member could
-not point it at a gym.)
+or BUSINESS_NAME in .env. (First written 1 September 2026 with one business written
+into it; rewritten 16 September 2026 so it reads the business from the file.)
 
 Two ways to judge, same brief, same cache:
 

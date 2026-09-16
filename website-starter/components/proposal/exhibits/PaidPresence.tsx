@@ -18,7 +18,7 @@ export function PaidPresence({ data }: { data: PaidPresenceExhibit }) {
 
   // End labels collide whenever two series finish on nearby values - "Legendary
   // Events · 3" sat straight on top of "High Life Event Group · 2" on the
-  // DJing.ca pull. Lay them out once, top to bottom, pushing any that land
+  // the first real pull. Lay them out once, top to bottom, pushing any that land
   // closer together than one line of text.
   const LABEL_GAP = 15;
   const endPoints = data.series.map((s) => {

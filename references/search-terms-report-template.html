@@ -164,54 +164,54 @@
 
 <script id="st-data" type="application/json">
 {
-  "business": "DJing.ca",
+  "business": "Dave's Plumbing",
   "account": "123-456-7890",
   "currency": "CAD",
   "window": "lifetime to 31 August 2026",
   "pulled": "1 September 2026",
   "totals": {
-    "terms": 45124,
-    "spend": 164075,
-    "leads": 3826,
-    "targetCpl": 45,
+    "terms": 4812,
+    "spend": 18940,
+    "leads": 402,
+    "targetCpl": 60,
     "targetSource": "context/business.md"
   },
   "trust": {
-    "hiddenShare": 0.427,
-    "keywordClicks": 32823,
-    "visibleClicks": 18819,
+    "hiddenShare": 0.38,
+    "keywordClicks": 6140,
+    "visibleClicks": 3807,
     "finding": {
-      "what": "$65,051 of $164,128 spent cannot be traced to a search term - 39.6% of the money, 42.7% of the clicks.",
-      "soWhat": "Every total in this report is a floor, not a total. Four campaigns are above 50%.",
-      "nowWhat": "N-grams and tighter match types beat row-by-row review here. Start with Squeeze and DJ - City - LP.",
+      "what": "$6,630 of $18,940 spent cannot be traced to a search term - 35.0% of the money, 38.0% of the clicks.",
+      "soWhat": "Every total in this report is a floor, not a total. One campaign is above 50%.",
+      "nowWhat": "N-grams and tighter match types beat row-by-row review there. Start with Plumber - Halifax.",
       "certainty": "measured"
     },
     "campaigns": [
       {
-        "name": "DJ - City - LP",
-        "hiddenShare": 0.91,
-        "spend": 12400,
-        "clicks": 8200
+        "name": "Plumber - Halifax",
+        "hiddenShare": 0.52,
+        "spend": 9800,
+        "clicks": 3100
       },
       {
-        "name": "Squeeze",
-        "hiddenShare": 0.8,
-        "spend": 9100,
-        "clicks": 5300
-      },
-      {
-        "name": "Weddings Toronto",
+        "name": "Drain Cleaning - Halifax",
         "hiddenShare": 0.31,
-        "spend": 44120,
-        "clicks": 9800
+        "spend": 5400,
+        "clicks": 1900
+      },
+      {
+        "name": "Water Heaters - Halifax",
+        "hiddenShare": 0.22,
+        "spend": 3740,
+        "clicks": 1140
       }
     ],
-    "hiddenCostShare": 0.396,
-    "spend": 164128,
-    "visibleCost": 99077,
-    "hiddenCost": 65051,
-    "visibleCpc": 5.26,
-    "hiddenCpc": 4.72,
+    "hiddenCostShare": 0.35,
+    "spend": 18940,
+    "visibleCost": 12310,
+    "hiddenCost": 6630,
+    "visibleCpc": 3.23,
+    "hiddenCpc": 2.84,
     "why": "Since September 2020 Google only lists a search term if enough different people searched it. Anything below that threshold is rolled into a single \"Other search terms\" line. Google's stated reason is privacy - a rare search can identify a person. The effect is that most of the long tail is invisible to everyone, including Google's own API. This is not a limit of this report or of your account: the data is not available to anybody.",
     "recover": [
       {
@@ -235,203 +235,182 @@
   "sources": {
     "leadsNegatives": true,
     "finding": {
-      "what": "Two broad keywords caught $44,000 across 11,357 distinct search terms.",
-      "soWhat": "The negatives batch below recovers $670. The match type is the actual problem, and it is 65x bigger.",
-      "nowWhat": "Phrase-match both keywords, then re-run this pass. Route to /keywords.",
+      "what": "One broad keyword caught $6,100 across 1,842 distinct search terms.",
+      "soWhat": "The negatives batch below recovers $310. The match type is the actual problem, and it is 20x bigger.",
+      "nowWhat": "Phrase-match the keyword, then re-run this pass. Route to /keywords.",
       "certainty": "measured"
     },
     "items": [
       {
-        "name": "wedding dj near me · BROAD · Weddings Toronto / Regular",
-        "spend": 28900,
-        "note": "7,214 terms · $4,100 zero-lead"
+        "name": "plumber near me · BROAD · Plumber - Halifax / Plumber",
+        "spend": 6100,
+        "note": "1,842 terms · $940 zero-lead"
       },
       {
-        "name": "dj for hire · BROAD · Corporate / Regular",
-        "spend": 15100,
-        "note": "4,143 terms · $2,300 zero-lead"
+        "name": "drain cleaning · PHRASE · Drain Cleaning - Halifax / Drain cleaning",
+        "spend": 3200,
+        "note": "611 terms · $260 zero-lead"
       }
     ],
     "matchedHow": [
       {
         "name": "BROAD",
-        "spend": 44000,
-        "conv": 2890,
-        "note": "89% of spend"
+        "spend": 8900,
+        "conv": 171,
+        "note": "72% of spend"
       },
       {
         "name": "PHRASE",
-        "spend": 4100,
-        "conv": 610
+        "spend": 2600,
+        "conv": 141
       },
       {
         "name": "EXACT",
-        "spend": 1975,
-        "conv": 326
+        "spend": 810,
+        "conv": 90
       }
     ],
     "crossAdGroup": [
       {
-        "name": "dj lessons",
-        "spend": 242,
-        "note": "2 ad groups: Weddings/Regular $212 · Corporate/Regular $30"
+        "name": "water heater repair",
+        "spend": 184,
+        "note": "2 ad groups: Plumber/Plumber $131 · Water Heaters/Repair $53"
       }
     ]
   },
   "blocked": {
-    "checked": 137,
+    "checked": 64,
     "finding": {
-      "what": "0 of 137 existing negatives block a keyword you bid on. 2 block search terms that had already converted.",
-      "soWhat": "Two negatives are switching off demand that was paying - $180 of recorded conversions before they were blocked.",
+      "what": "0 of 64 existing negatives block a keyword you bid on. 2 block search terms that had already converted.",
+      "soWhat": "Two negatives are switching off demand that was paying - $140 of recorded conversions before they were blocked.",
       "nowWhat": "Confirm each was deliberate. Nothing is removed without your yes.",
       "certainty": "measured"
     },
     "items": [
       {
-        "name": "-\"dj rental\" · phrase · account list",
-        "spend": 120,
-        "conv": 3,
-        "note": "blocked a term with 3 recorded leads"
+        "name": "-\"rental\" · phrase · account list",
+        "spend": 90,
+        "conv": 2,
+        "note": "blocked \"plumber for rental property\" - a landlord, not a tool hire"
       },
       {
-        "name": "-\"hiring a dj\" · phrase · Weddings Toronto",
-        "spend": 60,
-        "conv": 2,
-        "note": "\"hiring\" here means booking, not a job search"
+        "name": "-\"commercial\" · phrase · Plumber - Halifax",
+        "spend": 50,
+        "conv": 1,
+        "note": "blocked a small office job that converted"
       }
     ]
   },
   "negatives": {
-    "total": 29,
-    "recovered": 670,
+    "total": 14,
+    "recovered": 310,
     "finding": {
-      "what": "29 phrase and exact negatives, worth $670 across the account's lifetime.",
-      "soWhat": "About $5 a month. Real, but small next to the match-type finding above.",
+      "what": "14 phrase and exact negatives, worth $310 across the account's lifetime.",
+      "soWhat": "About $4 a month. Real, but small next to the match-type finding above.",
       "nowWhat": "Approve the batch, then push at the level shown on each line.",
       "certainty": "inferred",
       "assumption": null
     },
     "campaigns": [
       {
-        "name": "Weddings Toronto",
-        "spend": 44120,
-        "leads": 812,
-        "cpl": 54.33,
-        "hiddenShare": 0.31,
-        "toAction": "12 negatives · 47 keywords",
+        "name": "Plumber - Halifax",
+        "spend": 9800,
+        "leads": 178,
+        "cpl": 55.06,
+        "hiddenShare": 0.52,
+        "toAction": "9 negatives · 6 keywords",
         "adGroups": [
           {
-            "name": "Regular",
-            "visibleSpend": 22010,
-            "zeroLeadSpend": 412,
-            "cpl": 55.02,
-            "caughtBy": "wedding dj near me (BROAD)",
+            "name": "Plumber",
+            "visibleSpend": 4700,
+            "zeroLeadSpend": 212,
+            "cpl": 56.1,
+            "caughtBy": "plumber near me (BROAD)",
             "negatives": [
               {
-                "name": "\"dj lessons\" · phrase · ad group",
-                "spend": 212,
-                "clicks": 44,
+                "name": "\"plumber jobs\" · phrase · account list",
+                "spend": 88,
+                "clicks": 31,
                 "conv": 0,
-                "note": "Inferred: 9 of 10 results are training courses"
+                "note": "Inferred: 10 of 10 job boards"
               },
               {
-                "name": "\"dj school\" · phrase · ad group",
-                "spend": 98,
-                "clicks": 21,
+                "name": "\"plumbing course\" · phrase · account list",
+                "spend": 46,
+                "clicks": 17,
                 "conv": 0,
-                "note": "Inferred: 9 of 10 training courses"
+                "note": "Inferred: 9 of 10 training providers"
               },
               {
-                "name": "\"virtual dj\" · phrase · account list",
-                "spend": 61,
-                "clicks": 14,
-                "conv": 0,
-                "note": "Inferred: 10 of 10 software downloads"
-              },
-              {
-                "name": "\"dj soda\" · exact · ad group",
-                "spend": 41,
-                "clicks": 9,
-                "conv": 0,
-                "note": "Inferred: 10 of 10 concert ticketing, touring artist"
-              },
-              {
-                "name": "\"dj course\" · phrase · account list",
-                "spend": 55,
+                "name": "\"plumber salary\" · phrase · account list",
+                "spend": 31,
                 "clicks": 12,
                 "conv": 0,
-                "note": "Inferred: 10 of 10 training courses"
+                "note": "Inferred: 10 of 10 salary sites"
               },
               {
-                "name": "\"serato\" · phrase · account list",
-                "spend": 48,
+                "name": "\"home depot\" · phrase · ad group",
+                "spend": 29,
                 "clicks": 11,
                 "conv": 0,
-                "note": "Inferred: 10 of 10 DJ software"
+                "note": "Inferred: 10 of 10 retail"
               },
               {
-                "name": "\"speaker rental\" · phrase · ad group",
-                "spend": 44,
-                "clicks": 10,
-                "conv": 0,
-                "note": "Inferred: 8 of 10 equipment hire, not a DJ"
-              },
-              {
-                "name": "\"dj controller\" · phrase · ad group",
-                "spend": 39,
+                "name": "\"how to fix a leaking tap\" · phrase · account list",
+                "spend": 24,
                 "clicks": 9,
                 "conv": 0,
-                "note": "Inferred: 10 of 10 hardware retail"
+                "note": "Inferred: 10 of 10 DIY videos"
               },
               {
-                "name": "\"how to dj\" · phrase · account list",
-                "spend": 34,
+                "name": "\"plumbing apprenticeship\" · phrase · account list",
+                "spend": 22,
                 "clicks": 8,
                 "conv": 0,
-                "note": "Inferred: 10 of 10 tutorials"
+                "note": "Inferred: 10 of 10 trade schools"
               },
               {
-                "name": "\"dj equipment\" · phrase · ad group",
-                "spend": 31,
+                "name": "\"pipe fittings\" · phrase · ad group",
+                "spend": 19,
                 "clicks": 7,
                 "conv": 0,
-                "note": "Inferred: 9 of 10 retail"
+                "note": "Inferred: 9 of 10 parts retail"
               },
               {
-                "name": "\"become a dj\" · phrase · account list",
-                "spend": 28,
+                "name": "\"septic tank pumping\" · phrase · ad group",
+                "spend": 17,
                 "clicks": 6,
                 "conv": 0,
-                "note": "Inferred: 10 of 10 career guides"
+                "note": "Inferred: not sold - on the don't-do list"
               },
               {
-                "name": "\"dj mixer\" · phrase · ad group",
-                "spend": 22,
-                "clicks": 5,
+                "name": "\"east coast plumbing co\" · exact · ad group",
+                "spend": 14,
+                "clicks": 4,
                 "conv": 0,
-                "note": "Inferred: 10 of 10 hardware retail"
+                "note": "Inferred: a rival's name - exact, so \"east coast plumbing co reviews\" still reaches you"
               }
             ],
             "keywords": [
               {
-                "name": "[ottawa dj services] · exact",
-                "conv": 25.9,
-                "note": "unbid winner · $33 a lead · $193 value each"
+                "name": "[emergency plumber halifax] · exact",
+                "conv": 11.0,
+                "note": "unbid winner · $38 a lead · $410 value each"
               },
               {
-                "name": "[djs ottawa] · exact",
-                "conv": 18.2,
-                "note": "unbid winner · $19 a lead"
+                "name": "[burst pipe repair] · exact",
+                "conv": 6.0,
+                "note": "unbid winner · $44 a lead"
               },
               {
-                "name": "[dj ottawa wedding] · exact",
-                "conv": 12.4,
-                "note": "unbid winner · $21 a lead · pair: -\"dj ottawa wedding\" into Corporate / Regular"
+                "name": "[sump pump installation] · exact",
+                "conv": 4.0,
+                "note": "unbid winner · $51 a lead · pair: -\"sump pump\" into Plumber - Halifax / Plumber"
               }
             ],
             "leaveAlone": {
-              "terms": 1204,
-              "spend": 8100,
+              "terms": 388,
+              "spend": 1240,
               "why": "under 1x target cost per lead with no leads"
             }
           }
@@ -440,125 +419,107 @@
     ],
     "geography": {
       "finding": {
-        "what": "Seven towns outside the named service area spent $6,531 and returned 156 leads at $42 each.",
-        "soWhat": "At or under your $45 target. If you serve them this is your cheapest demand; if you do not, it is your biggest leak.",
+        "what": "Four towns outside the named service area spent $1,210 and returned 22 leads at $55 each.",
+        "soWhat": "At or under your $60 target. If you serve them this is your cheapest demand; if you do not, it is your biggest leak.",
         "nowWhat": "Answer the question first. Serve them: campaign candidates. Do not: geo negatives.",
         "certainty": "assumed",
-        "assumption": "Assumes DJing.ca does NOT serve these towns. Nothing in context/business.md says either way, and this number flips from opportunity to waste depending on the answer."
+        "assumption": "Assumes Dave's Plumbing does NOT serve these towns. Nothing in context/business.md says either way, and this number flips from opportunity to waste depending on the answer."
       },
       "items": [
         {
-          "name": "Mississauga",
-          "spend": 1840,
-          "conv": 44,
-          "note": "$42 a lead"
-        },
-        {
-          "name": "Brampton",
-          "spend": 1210,
-          "conv": 29,
-          "note": "$42 a lead"
-        },
-        {
-          "name": "Hamilton",
-          "spend": 980,
-          "conv": 23,
-          "note": "$43 a lead"
-        },
-        {
-          "name": "Surrey",
-          "spend": 910,
-          "conv": 22,
-          "note": "$41 a lead"
-        },
-        {
-          "name": "Abbotsford",
-          "spend": 720,
-          "conv": 17,
-          "note": "$42 a lead"
-        },
-        {
-          "name": "Langley",
-          "spend": 520,
-          "conv": 12,
-          "note": "$43 a lead"
-        },
-        {
-          "name": "Laval",
-          "spend": 351,
+          "name": "Truro",
+          "spend": 480,
           "conv": 9,
-          "note": "$39 a lead"
+          "note": "$53 a lead"
+        },
+        {
+          "name": "Kentville",
+          "spend": 340,
+          "conv": 6,
+          "note": "$57 a lead"
+        },
+        {
+          "name": "Bridgewater",
+          "spend": 230,
+          "conv": 4,
+          "note": "$58 a lead"
+        },
+        {
+          "name": "Windsor",
+          "spend": 160,
+          "conv": 3,
+          "note": "$53 a lead"
         }
       ]
     }
   },
   "harvest": {
-    "total": 321,
-    "leads": 1056,
-    "value": 19441,
+    "total": 23,
+    "leads": 61,
+    "value": 24400,
     "finding": {
-      "what": "321 converting search terms are not keywords anywhere - 1,056 leads at or under target.",
-      "soWhat": "Worth $19,441, but nearly every ad group is named \"Regular\", so all 321 would serve the same ad and the same page.",
-      "nowWhat": "Fix the match types and the ad group structure first. This batch waits - promoting into one generic group buys almost nothing.",
+      "what": "23 converting search terms are not keywords anywhere - 61 leads at or under target.",
+      "soWhat": "Worth $24,400 in booked work, and each one already lands in the ad group that should own it.",
+      "nowWhat": "Add them as exact keywords, PAUSED, then switch them on in the UI.",
       "certainty": "measured"
     },
-    "blockedByStructure": true
+    "blockedByStructure": false
   },
   "brandSplit": {
     "available": true,
     "brand": {
-      "terms": 84,
-      "spend": 2100,
-      "conv": 84,
-      "cpl": 25.0
+      "terms": 31,
+      "spend": 410,
+      "conv": 19,
+      "cpl": 21.58
     },
     "nonBrand": {
-      "terms": 45040,
-      "spend": 161975,
-      "conv": 3742,
-      "cpl": 43.29
+      "terms": 4781,
+      "spend": 18530,
+      "conv": 383,
+      "cpl": 48.38
     },
     "finding": {
-      "what": "Brand terms convert at $25 a lead. Everything else costs $43.",
-      "soWhat": "The blended $42.88 you have been reading is brand traffic flattering cold acquisition. Non-brand is the number that matters and it is 73% higher.",
-      "nowWhat": "Judge non-brand terms against $43, not the blend. Thresholds in this run are already split.",
+      "what": "Brand terms convert at $22 a lead. Everything else costs $48.",
+      "soWhat": "The blended $47.11 you have been reading is brand traffic flattering cold acquisition. Non-brand is the number that matters.",
+      "nowWhat": "Judge non-brand terms against $48, not the blend. Thresholds in this run are already split.",
       "certainty": "measured"
     }
   },
   "doFirst": [
     {
-      "name": "Phrase-match the two broad keywords",
-      "note": "$44,000 of spend, 11,357 terms · biggest single lever here",
+      "name": "Phrase-match the broad keyword",
+      "note": "$6,100 of spend, 1,842 terms · biggest single lever here",
       "certainty": "measured"
     },
     {
-      "name": "Answer the seven-town service-area question",
-      "note": "$6,531 flips between opportunity and waste on your answer",
+      "name": "Answer the four-town service-area question",
+      "note": "$1,210 flips between opportunity and waste on your answer",
       "certainty": "assumed"
     },
     {
       "name": "Confirm the two existing negatives that blocked converting terms",
-      "note": "$180 of recorded leads switched off",
+      "note": "$140 of recorded leads switched off",
       "certainty": "measured"
     },
     {
-      "name": "Approve the 29 negatives",
-      "note": "$670 lifetime · about $5 a month",
+      "name": "Approve the 14 negatives",
+      "note": "$310 lifetime · about $4 a month",
       "certainty": "inferred"
     }
   ],
   "notMeasured": [
-    "42.7% of clicks are on terms Google will not name. Search Terms Insights covers all queries including hidden ones, but will not reconcile with this report.",
-    "Conversion value is present on 61% of leads. Terms without it are judged on lead count alone.",
+    "38.0% of clicks are on terms Google will not name. Search Terms Insights covers all queries including hidden ones, but will not reconcile with this report.",
+    "Conversion value is present on 70% of leads. Terms without it are judged on lead count alone.",
     "Which towns the business serves. Asked, unanswered - the geography block stays Assumed until it is."
   ],
   "_selftest_bug_marker": null,
   "rivalCall": {
     "count": 3,
-    "spendNoLeads": 212,
+    "spendNoLeads": 96,
     "converting": [
       {
-        "name": "acme plumbing",
+        "name": "harbour city plumbing",
         "conv": 2,
         "cpl": 31
       }
